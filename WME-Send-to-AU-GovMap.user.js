@@ -25,7 +25,7 @@
     const SCRIPT_NAME = GM_info.script.name;
     const SCRIPT_VERSION = GM_info.script.version;
     const DOWNLOAD_URL = 'https://github.com/DeviateFromThePlan/WME-Send-to-AU-GovMap/releases/latest/download/WME-Send-to-AU-GovMap.user.js';
-    const UPDATE_NOTES = '<h4><u>Bug fixes:</u></h4><ul><li>Fixed a scale bug with VicMapshare.</li></ul><br><a href="https://github.com/DeviateFromThePlan/WME-Send-to-AU-GovMap/releases" target="_blank"><img src="https://simpleicons.org/icons/github.svg" width=10> View Release Notes</a>';
+    const UPDATE_NOTES = '<h4><u>Bug fixes:</u></h4><ul><li>Fixed a scale bug with MapshareVic.</li></ul><br><a href="https://github.com/DeviateFromThePlan/WME-Send-to-AU-GovMap/releases" target="_blank"><img src="https://simpleicons.org/icons/github.svg" width=10> View Release Notes</a>';
     
     if (document.URL.includes('https://qldglobe.information.qld.gov.au/')) {
         //INSERT QLDGLOBE CODE HERE
@@ -35,6 +35,7 @@
         let SEGMENT_COUNT = 0;
         let ACTIONS_LOADED = 0;
         let GOVMAP_GKEY_ENABLED = false;
+        let settings = {}; //need to check whether it works
         let NEEDED_PARAMS = {
             WMESTDCountry: '',
             WMESTDState: '',
@@ -64,8 +65,8 @@
 
             // Settings tab
             let tabElement = document.createElement('div');
-            tabElement.innerHTML = ['<h4>WME Send to AU GovMap</h4>', '<h6>Controls</h6>', '<form id="controls" name="controls">', '<input type="checkbox" id="govmapGKey" name="govmapGKey" value="true"/> G Key', '</form>'].join('');
-            WazeWrap.Interface.Tab('GovMap', tabElement.innerHTML, function () {});
+            tabElement.innerHTML = ['<h4>WME Send to AU GovMap</h4>', '<h6>Controls</h6>', '<form id="controls" name="controls">', '<input type="checkbox" id="govmapGKey" name="govmapGKey" class="govmapCheckbox" value="true"/> G Key', '</form>'].join('');
+            WazeWrap.Interface.Tab('GovMap', tabElement.innerHTML, initializeSettings);
 
             document.getElementById('govmapGKey').addEventListener('change', (event) => {
                 GOVMAP_GKEY_ENABLED = event.target.checked;
@@ -91,6 +92,44 @@
             });
 
             WazeWrap.Interface.ShowScriptUpdate(SCRIPT_NAME, SCRIPT_VERSION, UPDATE_NOTES, '');
+        }
+
+        function initializeSettings() {
+            loadSettings();
+            setChecked('govmapGKey', settings.Enabled);
+
+            $('.govmapCheckbox').change(function() {
+                var settingName = $(this)[0].id.substr(7);
+               settings[settingName] = this.checked;
+               saveSettings();
+           });
+        }
+
+        function setChecked(checkboxId, checked) {
+            $('#' + checkboxId).prop('checked', checked);
+        }
+
+        function saveSettings() {
+            if (localStorage) {
+                var localsettings = {
+                    Enabled: settings.Enabled
+                };
+    
+                localStorage.setItem("govmap_Settings", JSON.stringify(localsettings));
+            }
+        }
+
+        function loadSettings() {
+            var loadedSettings = $.parseJSON(localStorage.getItem("govmap_Settings"));
+            var defaultSettings = {
+                Enabled: false,
+            };
+            settings = loadedSettings ? loadedSettings : defaultSettings;
+            for (var prop in defaultSettings) {
+                if (!settings.hasOwnProperty(prop))
+                    settings[prop] = defaultSettings[prop];
+            }
+    
         }
 
         function getMapLink() {
