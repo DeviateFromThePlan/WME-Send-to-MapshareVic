@@ -8,11 +8,13 @@
 // @match        *://*.waze.com/*editor*
 // @match        https://qldglobe.information.qld.gov.au*
 // @exclude      *://*.waze.com/user/editor*
-// @grant        none
+// @grant        GM_xmlhttpRequest
 // @require      https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
 // @downloadURL  https://github.com/DeviateFromThePlan/WME-Send-to-AU-GovMap/releases/latest/download/WME-Send-to-AU-GovMap.user.js
 // @updateURL    https://github.com/DeviateFromThePlan/WME-Send-to-AU-GovMap/releases/latest/download/WME-Send-to-AU-GovMap.user.js
+// @connect      github.com
+// @connect      githubusercontent.com
 // @iconURL      https://i.ibb.co/k8RdMh0/image.png
 // ==/UserScript==
 
@@ -33,14 +35,7 @@
     } else {
         const WGS_84 = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs';
         const VIC_GRID_94 = '+proj=tmerc +lat_0=-37 +lon_0=145 +k=1 +x_0=2500000 +y_0=2500000 +ellps=GRS80 +units=m +no_defs';
-        let SEGMENT_COUNT = 0;
-        let ACTIONS_LOADED = 0;
         let GOVMAP_GKEY_ENABLED = false;
-        let NEEDED_PARAMS = {
-            WMESTDCountry: '',
-            WMESTDState: '',
-            WMESTDServer: '',
-        };
 
         function bootstrap() {
             if (typeof W === 'object' && W.userscripts?.state.isReady && WazeWrap.Interface) {
@@ -56,7 +51,7 @@
             logDebug('Initialising');
 
             try {
-                let updateMonitor = new WazeWrap.Alerts.ScriptUpdateMonitor(SCRIPT_NAME, SCRIPT_VERSION, DOWNLOAD_URL, GM_xmlhttpRequest);
+                let updateMonitor = new WazeWrap.Alerts.ScriptUpdateMonitor(SCRIPT_NAME, SCRIPT_VERSION, DOWNLOAD_URL, GM_xmlhttpRequest, DOWNLOAD_URL);
                 updateMonitor.start();
             } catch (ex) {
                 // Report, but don't stop if ScriptUpdateMonitor fails.
